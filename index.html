@@ -1,1071 +1,331 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Manidathu Andriyala — Data Engineer</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-<style>
-  /* ── Reset & Base ── */
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --navy:   #0A0F1E;
-    --navy2:  #111827;
-    --cyan:   #00D4FF;
-    --cyan2:  #00A8CC;
-    --gold:   #FFB800;
-    --white:  #F0F4FF;
-    --slate:  #8892A4;
-    --card:   #131C30;
-    --border: rgba(0,212,255,0.15);
-    --glow:   0 0 24px rgba(0,212,255,0.25);
-  }
-
-  html { scroll-behavior: smooth; }
-
-  body {
-    background: var(--navy);
-    color: var(--white);
-    font-family: 'Inter', sans-serif;
-    line-height: 1.6;
-    overflow-x: hidden;
-    cursor: none;
-  }
-
-  /* ── Custom Cursor ── */
-  #cursor {
-    position: fixed; top: 0; left: 0; z-index: 9999;
-    pointer-events: none;
-  }
-  #cursor-dot {
-    width: 8px; height: 8px;
-    background: var(--cyan);
-    border-radius: 50%;
-    position: absolute;
-    transform: translate(-50%, -50%);
-    transition: transform 0.08s ease, background 0.2s;
-  }
-  #cursor-ring {
-    width: 36px; height: 36px;
-    border: 1.5px solid rgba(0,212,255,0.6);
-    border-radius: 50%;
-    position: absolute;
-    transform: translate(-50%, -50%);
-    transition: transform 0.18s cubic-bezier(.17,.67,.83,.67), width 0.2s, height 0.2s, border-color 0.2s;
-  }
-  body.cursor-hover #cursor-ring {
-    width: 56px; height: 56px;
-    border-color: var(--gold);
-  }
-
-  /* ── Scrollbar ── */
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: var(--navy); }
-  ::-webkit-scrollbar-thumb { background: var(--cyan2); border-radius: 2px; }
-
-  /* ── Nav ── */
-  nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    padding: 18px 60px;
-    display: flex; justify-content: space-between; align-items: center;
-    background: transparent;
-    transition: background 0.4s, backdrop-filter 0.4s;
-  }
-  nav.scrolled {
-    background: rgba(10,15,30,0.85);
-    backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--border);
-  }
-  .nav-logo {
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 700; font-size: 1.1rem;
-    color: var(--cyan);
-    letter-spacing: -0.02em;
-    text-decoration: none;
-  }
-  .nav-links { display: flex; gap: 36px; list-style: none; }
-  .nav-links a {
-    color: var(--slate); text-decoration: none;
-    font-size: 0.85rem; font-weight: 500;
-    letter-spacing: 0.05em; text-transform: uppercase;
-    transition: color 0.2s;
-    position: relative;
-  }
-  .nav-links a::after {
-    content: ''; position: absolute; bottom: -3px; left: 0;
-    width: 0; height: 1px; background: var(--cyan);
-    transition: width 0.3s;
-  }
-  .nav-links a:hover { color: var(--white); }
-  .nav-links a:hover::after { width: 100%; }
-
-  /* ── Hero ── */
-  #hero {
-    min-height: 100vh;
-    display: flex; align-items: center;
-    padding: 120px 60px 80px;
-    position: relative; overflow: hidden;
-  }
-
-  /* Pipeline canvas background */
-  #pipeline-canvas {
-    position: absolute; inset: 0;
-    opacity: 0.35;
-    pointer-events: none;
-  }
-
-  .hero-content { position: relative; z-index: 2; max-width: 780px; }
-
-  .hero-badge {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: rgba(0,212,255,0.08);
-    border: 1px solid var(--border);
-    border-radius: 100px;
-    padding: 6px 16px;
-    font-size: 0.78rem; font-weight: 500;
-    color: var(--cyan);
-    letter-spacing: 0.06em; text-transform: uppercase;
-    margin-bottom: 28px;
-    opacity: 0; animation: fadeUp 0.6s ease 0.3s forwards;
-  }
-  .hero-badge::before {
-    content: ''; width: 6px; height: 6px;
-    background: var(--cyan); border-radius: 50%;
-    animation: pulse 1.8s infinite;
-  }
-
-  .hero-name {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(2.6rem, 6vw, 5rem);
-    font-weight: 700; line-height: 1.05;
-    letter-spacing: -0.03em;
-    color: var(--white);
-    margin-bottom: 14px;
-    opacity: 0; animation: fadeUp 0.7s ease 0.5s forwards;
-  }
-  .hero-name span { color: var(--cyan); }
-
-  .hero-role {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: clamp(1rem, 2vw, 1.25rem);
-    color: var(--gold);
-    margin-bottom: 24px;
-    opacity: 0; animation: fadeUp 0.7s ease 0.7s forwards;
-    min-height: 1.8em;
-  }
-
-  .hero-summary {
-    font-size: 1.05rem; color: var(--slate);
-    line-height: 1.75; max-width: 600px;
-    margin-bottom: 44px;
-    opacity: 0; animation: fadeUp 0.7s ease 0.9s forwards;
-  }
-
-  .hero-cta {
-    display: flex; gap: 16px; flex-wrap: wrap;
-    opacity: 0; animation: fadeUp 0.7s ease 1.1s forwards;
-  }
-  .btn-primary {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: var(--cyan); color: var(--navy);
-    font-weight: 700; font-size: 0.9rem;
-    padding: 14px 28px; border-radius: 8px;
-    text-decoration: none; letter-spacing: 0.02em;
-    transition: transform 0.2s, box-shadow 0.2s;
-    box-shadow: 0 0 0 rgba(0,212,255,0);
-  }
-  .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 32px rgba(0,212,255,0.35);
-  }
-  .btn-secondary {
-    display: inline-flex; align-items: center; gap: 8px;
-    border: 1px solid var(--border); color: var(--white);
-    font-weight: 500; font-size: 0.9rem;
-    padding: 14px 28px; border-radius: 8px;
-    text-decoration: none;
-    transition: border-color 0.2s, background 0.2s;
-  }
-  .btn-secondary:hover {
-    border-color: var(--cyan);
-    background: rgba(0,212,255,0.06);
-  }
-
-  /* Floating stat cards */
-  .hero-stats {
-    position: absolute; right: 60px; top: 50%;
-    transform: translateY(-50%);
-    display: flex; flex-direction: column; gap: 16px;
-    z-index: 2;
-    opacity: 0; animation: fadeLeft 0.8s ease 1.3s forwards;
-  }
-  .stat-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 18px 24px;
-    text-align: center;
-    min-width: 140px;
-    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
-    position: relative; overflow: hidden;
-  }
-  .stat-card::before {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(135deg, rgba(0,212,255,0.05), transparent);
-    opacity: 0; transition: opacity 0.3s;
-  }
-  .stat-card:hover { transform: translateY(-4px); box-shadow: var(--glow); border-color: var(--cyan); }
-  .stat-card:hover::before { opacity: 1; }
-  .stat-num {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 2rem; font-weight: 700;
-    color: var(--cyan); line-height: 1;
-  }
-  .stat-label { font-size: 0.75rem; color: var(--slate); margin-top: 4px; }
-
-  /* ── Section commons ── */
-  section { padding: 100px 60px; }
-  .section-eye {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.78rem; color: var(--cyan);
-    letter-spacing: 0.1em; text-transform: uppercase;
-    margin-bottom: 12px; display: block;
-  }
-  .section-title {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(1.8rem, 3.5vw, 2.8rem);
-    font-weight: 700; letter-spacing: -0.02em;
-    color: var(--white); margin-bottom: 14px;
-  }
-  .section-sub {
-    color: var(--slate); font-size: 1rem;
-    max-width: 560px; margin-bottom: 56px; line-height: 1.7;
-  }
-  .reveal { opacity: 0; transform: translateY(32px); transition: opacity 0.7s ease, transform 0.7s ease; }
-  .reveal.visible { opacity: 1; transform: translateY(0); }
-
-  /* ── About ── */
-  #about { background: var(--navy2); }
-  .about-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 60px;
-    align-items: center;
-  }
-  .about-text p {
-    color: var(--slate); line-height: 1.8; margin-bottom: 18px;
-    font-size: 0.98rem;
-  }
-  .about-text p strong { color: var(--white); }
-  .contact-row {
-    display: flex; gap: 20px; flex-wrap: wrap; margin-top: 28px;
-  }
-  .contact-item {
-    display: flex; align-items: center; gap: 8px;
-    font-size: 0.85rem; color: var(--slate);
-    text-decoration: none;
-    transition: color 0.2s;
-  }
-  .contact-item:hover { color: var(--cyan); }
-  .contact-icon { font-size: 1rem; }
-
-  /* Timeline */
-  .timeline { position: relative; padding-left: 28px; }
-  .timeline::before {
-    content: ''; position: absolute; left: 7px; top: 8px; bottom: 8px;
-    width: 2px; background: linear-gradient(to bottom, var(--cyan), var(--cyan2), transparent);
-  }
-  .tl-item { position: relative; margin-bottom: 36px; }
-  .tl-dot {
-    position: absolute; left: -28px; top: 6px;
-    width: 14px; height: 14px; border-radius: 50%;
-    background: var(--navy); border: 2px solid var(--cyan);
-    box-shadow: 0 0 10px rgba(0,212,255,0.5);
-    transition: background 0.3s;
-  }
-  .tl-item:hover .tl-dot { background: var(--cyan); }
-  .tl-date {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem; color: var(--gold);
-    margin-bottom: 4px;
-  }
-  .tl-role {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 1.05rem; font-weight: 600; color: var(--white);
-  }
-  .tl-company { font-size: 0.88rem; color: var(--cyan); margin-bottom: 8px; }
-  .tl-desc { font-size: 0.88rem; color: var(--slate); line-height: 1.7; }
-
-  /* ── Experience ── */
-  #experience { background: var(--navy); }
-  .exp-cards { display: flex; flex-direction: column; gap: 28px; }
-  .exp-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 32px 36px;
-    transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
-    position: relative; overflow: hidden;
-  }
-  .exp-card::before {
-    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
-    width: 3px;
-    background: linear-gradient(to bottom, var(--cyan), var(--gold));
-    opacity: 0; transition: opacity 0.3s;
-  }
-  .exp-card:hover { border-color: rgba(0,212,255,0.3); box-shadow: var(--glow); transform: translateX(4px); }
-  .exp-card:hover::before { opacity: 1; }
-  .exp-header {
-    display: flex; justify-content: space-between;
-    align-items: flex-start; gap: 16px; flex-wrap: wrap;
-    margin-bottom: 16px;
-  }
-  .exp-title {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 1.15rem; font-weight: 600; color: var(--white);
-  }
-  .exp-company { color: var(--cyan); font-size: 0.9rem; margin-top: 2px; }
-  .exp-period {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem; color: var(--gold);
-    background: rgba(255,184,0,0.08);
-    padding: 4px 12px; border-radius: 100px;
-    white-space: nowrap;
-  }
-  .exp-bullets { list-style: none; }
-  .exp-bullets li {
-    color: var(--slate); font-size: 0.9rem; line-height: 1.7;
-    padding: 5px 0; padding-left: 20px; position: relative;
-  }
-  .exp-bullets li::before {
-    content: '▸'; position: absolute; left: 0;
-    color: var(--cyan); font-size: 0.75rem; top: 6px;
-  }
-  .exp-bullets li strong { color: var(--white); }
-  .exp-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
-  .exp-tag {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.72rem; color: var(--cyan2);
-    background: rgba(0,212,255,0.07);
-    border: 1px solid rgba(0,212,255,0.18);
-    padding: 3px 10px; border-radius: 4px;
-  }
-
-  /* ── Skills ── */
-  #skills { background: var(--navy2); }
-  .skills-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 24px;
-  }
-  .skill-group {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 26px;
-    transition: border-color 0.3s, box-shadow 0.3s;
-  }
-  .skill-group:hover { border-color: rgba(0,212,255,0.3); box-shadow: var(--glow); }
-  .skill-group-title {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 0.85rem; font-weight: 600;
-    color: var(--white);
-    letter-spacing: 0.04em; text-transform: uppercase;
-    margin-bottom: 16px;
-    display: flex; align-items: center; gap: 10px;
-  }
-  .skill-group-icon { font-size: 1.1rem; }
-  .skill-items { display: flex; flex-wrap: wrap; gap: 8px; }
-  .skill-item {
-    font-size: 0.82rem; color: var(--slate);
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.07);
-    padding: 5px 12px; border-radius: 6px;
-    transition: color 0.2s, border-color 0.2s, background 0.2s;
-    cursor: default;
-  }
-  .skill-item:hover {
-    color: var(--cyan);
-    border-color: var(--border);
-    background: rgba(0,212,255,0.06);
-  }
-
-  /* Proficiency bars */
-  .prof-bars { margin-top: 20px; }
-  .prof-bar-row { margin-bottom: 14px; }
-  .prof-bar-label {
-    display: flex; justify-content: space-between;
-    font-size: 0.82rem; color: var(--slate); margin-bottom: 6px;
-  }
-  .prof-bar-label span:last-child { color: var(--cyan); font-family: 'JetBrains Mono', monospace; }
-  .prof-bar-track {
-    background: rgba(255,255,255,0.07);
-    border-radius: 100px; height: 4px; overflow: hidden;
-  }
-  .prof-bar-fill {
-    height: 100%; border-radius: 100px;
-    background: linear-gradient(90deg, var(--cyan2), var(--cyan));
-    width: 0; transition: width 1.2s cubic-bezier(.4,0,.2,1);
-    box-shadow: 0 0 8px rgba(0,212,255,0.5);
-  }
-
-  /* ── Metrics ── */
-  #metrics {
-    background: var(--navy);
-    text-align: center;
-  }
-  .metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 24px; margin-top: 60px;
-  }
-  .metric-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 36px 24px;
-    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
-    position: relative; overflow: hidden;
-  }
-  .metric-card::after {
-    content: ''; position: absolute;
-    bottom: 0; left: 50%; transform: translateX(-50%);
-    width: 40%; height: 1px;
-    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-    opacity: 0; transition: opacity 0.3s;
-  }
-  .metric-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(0,212,255,0.15); border-color: rgba(0,212,255,0.3); }
-  .metric-card:hover::after { opacity: 1; }
-  .metric-num {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 2.8rem; font-weight: 700;
-    color: var(--cyan); line-height: 1;
-    margin-bottom: 10px;
-  }
-  .metric-label { font-size: 0.85rem; color: var(--slate); line-height: 1.5; }
-  .metric-gold .metric-num { color: var(--gold); }
-
-  /* ── Education & Certs ── */
-  #education { background: var(--navy2); }
-  .edu-certs-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 40px;
-  }
-  .edu-card, .cert-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px; padding: 28px;
-    transition: border-color 0.3s, box-shadow 0.3s;
-  }
-  .edu-card:hover, .cert-card:hover {
-    border-color: rgba(0,212,255,0.3);
-    box-shadow: var(--glow);
-  }
-  .edu-card-title {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 1.05rem; font-weight: 600; color: var(--white);
-  }
-  .edu-card-school { color: var(--cyan); font-size: 0.9rem; margin: 6px 0; }
-  .edu-card-period {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem; color: var(--gold);
-  }
-  .cert-badge {
-    display: flex; align-items: center; gap: 14px; margin-top: 8px;
-  }
-  .cert-icon {
-    width: 44px; height: 44px; border-radius: 10px;
-    background: linear-gradient(135deg, #0078d4, #005a9e);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.3rem; flex-shrink: 0;
-  }
-  .cert-name {
-    font-size: 0.9rem; font-weight: 500; color: var(--white);
-    line-height: 1.4;
-  }
-  .cert-issuer { font-size: 0.78rem; color: var(--slate); margin-top: 2px; }
-
-  /* ── Contact / Footer ── */
-  #contact {
-    background: var(--navy);
-    text-align: center;
-    padding: 80px 60px 60px;
-  }
-  .contact-cta {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(1.6rem, 3vw, 2.4rem);
-    font-weight: 700; letter-spacing: -0.02em;
-    margin-bottom: 12px;
-  }
-  .contact-sub { color: var(--slate); font-size: 1rem; margin-bottom: 36px; }
-  .contact-links {
-    display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
-  }
-  .contact-link {
-    display: inline-flex; align-items: center; gap: 8px;
-    color: var(--slate); font-size: 0.9rem;
-    padding: 12px 22px;
-    border: 1px solid var(--border); border-radius: 8px;
-    text-decoration: none;
-    transition: color 0.2s, border-color 0.2s, background 0.2s;
-  }
-  .contact-link:hover { color: var(--cyan); border-color: var(--cyan); background: rgba(0,212,255,0.05); }
-  .footer-note {
-    margin-top: 60px; padding-top: 24px;
-    border-top: 1px solid var(--border);
-    color: var(--slate); font-size: 0.8rem;
-    font-family: 'JetBrains Mono', monospace;
-  }
-
-  /* ── Animations ── */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes fadeLeft {
-    from { opacity: 0; transform: translate(20px, -50%); }
-    to   { opacity: 1; transform: translate(0, -50%); }
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50%       { opacity: 0.5; transform: scale(0.8); }
-  }
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50%       { transform: translateY(-8px); }
-  }
-  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-  .cursor-blink { animation: blink 0.9s step-end infinite; }
-
-  /* ── Responsive ── */
-  @media (max-width: 900px) {
-    nav { padding: 16px 24px; }
-    .nav-links { display: none; }
-    section { padding: 80px 24px; }
-    #hero { padding: 100px 24px 60px; }
-    .hero-stats { display: none; }
-    .about-grid, .edu-certs-grid { grid-template-columns: 1fr; }
-    .hero-name { font-size: 2.4rem; }
-  }
-
-  /* Reduced motion */
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#05070a">
+  <title>Manidathu Andriyala | Data Engineer Portfolio</title>
+  <meta name="description" content="Portfolio of Manidathu Andriyala, a Data Engineer specializing in Informatica, Snowflake, Oracle PL/SQL, ETL pipelines, and data governance.">
+  <script>document.documentElement.classList.add("js");</script>
+  <link rel="preload" href="assets/data-architecture-hero.png" as="image">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <canvas id="field" aria-hidden="true"></canvas>
+  <div class="cursor-core" aria-hidden="true"></div>
+  <div class="cursor-ring" aria-hidden="true"></div>
+  <div class="scroll-progress" aria-hidden="true"></div>
 
-<!-- Custom Cursor -->
-<div id="cursor">
-  <div id="cursor-ring"></div>
-  <div id="cursor-dot"></div>
-</div>
+  <header class="site-header">
+    <a class="brand magnetic" href="#home" aria-label="Manidathu Andriyala home">
+      <span>MA</span>
+      <strong>Manidathu</strong>
+    </a>
+    <nav class="site-nav" aria-label="Primary navigation">
+      <a href="#impact">Impact</a>
+      <a href="#work">Work</a>
+      <a href="#cases">Cases</a>
+      <a href="#skills">Skills</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <a class="nav-action magnetic" href="assets/Manidathu_Andriyala_Resume.pdf" download>Resume</a>
+  </header>
 
-<!-- Nav -->
-<nav id="navbar">
-  <a class="nav-logo" href="#">MA.</a>
-  <ul class="nav-links">
-    <li><a href="#about">About</a></li>
-    <li><a href="#experience">Experience</a></li>
-    <li><a href="#skills">Skills</a></li>
-    <li><a href="#metrics">Impact</a></li>
-    <li><a href="#education">Education</a></li>
-    <li><a href="#contact">Contact</a></li>
-  </ul>
-</nav>
-
-<!-- ── HERO ── -->
-<section id="hero">
-  <canvas id="pipeline-canvas"></canvas>
-
-  <div class="hero-content">
-    <div class="hero-badge">Available for opportunities</div>
-    <h1 class="hero-name">Manidathu<br/><span>Andriyala</span></h1>
-    <div class="hero-role" id="typewriter"><span class="cursor-blink">|</span></div>
-    <p class="hero-summary">
-      Data Engineer with 2.5 years of experience building enterprise ETL pipelines,
-      cloud data migrations, and governance frameworks for banking clients across UAE &amp; KSA.
-    </p>
-    <div class="hero-cta">
-      <a href="#experience" class="btn-primary">View My Work ↓</a>
-      <a href="mailto:manidathua@gmail.com" class="btn-secondary">📧 Get In Touch</a>
-    </div>
-  </div>
-
-  <div class="hero-stats">
-    <div class="stat-card" style="animation-delay:1.4s">
-      <div class="stat-num" data-count="25">0</div>
-      <div class="stat-label">ETL Pipelines</div>
-    </div>
-    <div class="stat-card" style="animation-delay:1.55s">
-      <div class="stat-num">8M<span style="font-size:1.2rem">+</span></div>
-      <div class="stat-label">Daily Transactions</div>
-    </div>
-    <div class="stat-card" style="animation-delay:1.7s">
-      <div class="stat-num">99.5<span style="font-size:1.2rem">%</span></div>
-      <div class="stat-label">Data Accuracy</div>
-    </div>
-    <div class="stat-card" style="animation-delay:1.85s">
-      <div class="stat-num">2.5<span style="font-size:1.2rem">yr</span></div>
-      <div class="stat-label">Experience</div>
-    </div>
-  </div>
-</section>
-
-<!-- ── ABOUT ── -->
-<section id="about">
-  <div class="about-grid">
-    <div class="reveal">
-      <span class="section-eye">// about me</span>
-      <h2 class="section-title">Building Data<br/>Infrastructure That Scales</h2>
-      <p class="section-sub">I turn raw enterprise data into reliable, governed, high-performance pipelines.</p>
-      <div class="about-text">
-        <p>I'm a <strong>Data Engineer at C5I</strong>, Bengaluru, specialising in ETL development with Informatica PowerCenter/IICS, Oracle PL/SQL, and Snowflake — primarily for banking clients in the UAE and KSA.</p>
-        <p>My work spans 25+ end-to-end pipelines processing <strong>8M+ daily transactions</strong>, cloud migration from on-prem Oracle to Snowflake with 65% query speed improvements, and full data governance aligned to <strong>PDPL, NDMO, SAMA &amp; NCA</strong> regulations.</p>
-        <p>I hold a B.Tech in Computer Science from Lovely Professional University and am a <strong>Microsoft Certified Power BI Data Analyst</strong>.</p>
+  <main>
+    <section class="hero" id="home" data-section>
+      <div class="hero-media" aria-hidden="true">
+        <img src="assets/data-architecture-hero.png" alt="">
       </div>
-      <div class="contact-row">
-        <a href="mailto:manidathua@gmail.com" class="contact-item"><span class="contact-icon">✉</span> manidathua@gmail.com</a>
-        <a href="tel:+919618594639" class="contact-item"><span class="contact-icon">📱</span> +91 9618594639</a>
-        <a href="https://linkedin.com/in/Manidathu" target="_blank" class="contact-item"><span class="contact-icon">🔗</span> LinkedIn</a>
-        <span class="contact-item"><span class="contact-icon">📍</span> Hyderabad, India</span>
+      <div class="hero-shade" aria-hidden="true"></div>
+      <div class="ribbon-stack" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
       </div>
-    </div>
 
-    <div class="reveal" style="transition-delay:0.15s">
+      <div class="hero-grid">
+        <div class="hero-copy" data-reveal>
+          <p class="eyebrow">Data Engineer / Informatica / Snowflake / Governance</p>
+
+          <h1 class="kinetic-name" aria-label="Manidathu Andriyala">
+            <span class="name-row" aria-hidden="true">
+              <span>M</span><span>a</span><span>n</span><span>i</span><span>d</span><span>a</span><span>t</span><span>h</span><span>u</span>
+            </span>
+            <span class="name-row" aria-hidden="true">
+              <span>A</span><span>n</span><span>d</span><span>r</span><span>i</span><span>y</span><span>a</span><span>l</span><span>a</span>
+            </span>
+          </h1>
+
+          <p class="hero-line">I build high-trust data systems that turn enterprise banking complexity into fast, governed, audit-ready intelligence.</p>
+          <div class="hero-actions">
+            <a class="primary-action magnetic" href="#cases">View case files</a>
+            <a class="secondary-action magnetic" href="mailto:manidathua@gmail.com">Start a conversation</a>
+          </div>
+          <div class="contact-strip" aria-label="Contact summary">
+            <span>Hyderabad, India</span>
+            <a href="mailto:manidathua@gmail.com">manidathua@gmail.com</a>
+            <a href="tel:+919618594639">+91 9618594639</a>
+            <a href="https://linkedin.com/in/Manidathu">LinkedIn</a>
+          </div>
+        </div>
+
+        <aside class="hero-dashboard" data-reveal aria-label="Portfolio highlights">
+          <div class="dashboard-top">
+            <span class="live-dot"></span>
+            <span>Production signal</span>
+          </div>
+          <div class="hero-stat">
+            <strong><span data-count="25">0</span>+</strong>
+            <small>ETL pipelines shipped</small>
+          </div>
+          <div class="hero-stat">
+            <strong><span data-count="8">0</span>M+</strong>
+            <small>daily banking transactions</small>
+          </div>
+          <div class="hero-stat">
+            <strong><span data-count="99.5" data-decimals="1">0</span>%</strong>
+            <small>data accuracy achieved</small>
+          </div>
+        </aside>
+      </div>
+
+      <a class="scroll-cue" href="#impact" aria-label="Scroll to portfolio impact">
+        <span></span>
+      </a>
+    </section>
+
+    <section class="impact section-pad" id="impact" data-section>
+      <div class="section-heading" data-reveal>
+        <p class="eyebrow">Impact Layer</p>
+        <h2>Numbers with operational weight.</h2>
+        <p>From regulated banking data to cloud migration and governance, the portfolio is anchored in shipped systems and measurable improvements.</p>
+      </div>
+
+      <div class="metric-grid">
+        <article class="metric-card reveal-card" data-reveal>
+          <span>01</span>
+          <strong><span data-count="65">0</span>%</strong>
+          <p>faster Snowflake query execution after pipeline migration and tuning.</p>
+        </article>
+        <article class="metric-card reveal-card" data-reveal>
+          <span>02</span>
+          <strong><span data-count="77">0</span>%</strong>
+          <p>batch processing improvement by optimizing Oracle PL/SQL procedures.</p>
+        </article>
+        <article class="metric-card reveal-card" data-reveal>
+          <span>03</span>
+          <strong><span data-count="180">0</span>+</strong>
+          <p>assets governed through Informatica EDC and AXON retention lifecycle work.</p>
+        </article>
+        <article class="metric-card reveal-card" data-reveal>
+          <span>04</span>
+          <strong><span data-count="35">0</span>+</strong>
+          <p>metadata mappings built for lineage, traceability, and faster audit readiness.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="about section-pad">
+      <div class="about-grid">
+        <div class="section-heading align-left" data-reveal>
+          <p class="eyebrow">Profile</p>
+          <h2>Engineer for the part of data work that has to be right.</h2>
+          <p>Manidathu is a Data Engineer with 2.5 years of experience in enterprise ETL development, cloud data migration, and data governance for banking clients across UAE and KSA.</p>
+        </div>
+        <div class="mode-grid">
+          <article class="mode-card reveal-card" data-reveal>
+            <strong>Pipeline Architecture</strong>
+            <p>Designs mappings, sessions, workflows, reusable transformations, incremental loads, and SCD Type 1 and 2 flows.</p>
+          </article>
+          <article class="mode-card reveal-card" data-reveal>
+            <strong>Performance Engineering</strong>
+            <p>Tunes Oracle PL/SQL, execution plans, partitioning, and materialized views for faster batch and analytics workloads.</p>
+          </article>
+          <article class="mode-card reveal-card" data-reveal>
+            <strong>Governed Delivery</strong>
+            <p>Builds validation, reconciliation, reject handling, automated alerts, lineage, sensitivity classification, and compliance-ready controls.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="work section-pad" id="work" data-section>
+      <div class="section-heading" data-reveal>
+        <p class="eyebrow">Experience Timeline</p>
+        <h2>Where the systems got sharper.</h2>
+      </div>
+
       <div class="timeline">
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-date">Jul 2024 – Present</div>
-          <div class="tl-role">Data Engineer</div>
-          <div class="tl-company">C5I · Bengaluru</div>
-          <div class="tl-desc">ETL pipelines, Snowflake migration, data governance for banking clients in UAE &amp; KSA.</div>
+        <article class="timeline-item reveal-card" data-reveal>
+          <div class="time-node"></div>
+          <div class="timeline-card">
+            <div class="timeline-head">
+              <div>
+                <span>Jul 2024 - Present</span>
+                <h3>C5I</h3>
+              </div>
+              <p>Data Engineer / Bengaluru, India</p>
+            </div>
+            <ul>
+              <li>Delivered 25+ end-to-end ETL pipelines using Informatica PowerCenter, IICS, and SSIS across 12+ enterprise source systems.</li>
+              <li>Migrated 15 critical Oracle pipelines to Snowflake and reduced query execution time by 65%.</li>
+              <li>Cut Oracle PL/SQL batch processing from 2.5 hours to 35 minutes through index tuning and plan analysis.</li>
+              <li>Implemented validation, reconciliation, reject handling, and alerts for 15+ quality thresholds.</li>
+              <li>Managed retention, lineage, and sensitivity classification for 180+ assets across PDPL, NDMO, SAMA, and NCA standards.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="timeline-item reveal-card" data-reveal>
+          <div class="time-node"></div>
+          <div class="timeline-card">
+            <div class="timeline-head">
+              <div>
+                <span>Jan 2024 - May 2024</span>
+                <h3>upGrad Campus</h3>
+              </div>
+              <p>Data Science Intern / Remote</p>
+            </div>
+            <ul>
+              <li>Built a probabilistic weather forecasting project with Bayesian deep learning and interactive visualization.</li>
+              <li>Compared Decision Tree, Gradient Boosting Classifier, and Bayesian Neural Network models on historical weather data.</li>
+              <li>Reached 96.93% test accuracy with Gradient Boosting and used Plotly dashboards for interpretability.</li>
+            </ul>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="cases section-pad" id="cases" data-section>
+      <div class="section-heading" data-reveal>
+        <p class="eyebrow">Case Files</p>
+        <h2>Selected work, reframed as products.</h2>
+        <p>Each case turns resume evidence into a focused story: challenge, stack, and measurable outcome.</p>
+      </div>
+
+      <div class="case-lab">
+        <div class="project-list" role="tablist" aria-label="Portfolio case files">
+          <button class="project-card active magnetic" type="button" role="tab" aria-selected="true" data-project="etl">
+            <span>01</span>
+            <strong>Banking ETL Command Grid</strong>
+            <small>Informatica / IICS / SSIS</small>
+          </button>
+          <button class="project-card magnetic" type="button" role="tab" aria-selected="false" data-project="snowflake">
+            <span>02</span>
+            <strong>Snowflake Migration Sprint</strong>
+            <small>Oracle / Snowflake / PL/SQL</small>
+          </button>
+          <button class="project-card magnetic" type="button" role="tab" aria-selected="false" data-project="governance">
+            <span>03</span>
+            <strong>Governance Atlas</strong>
+            <small>EDC / AXON / Compliance</small>
+          </button>
+          <button class="project-card magnetic" type="button" role="tab" aria-selected="false" data-project="weather">
+            <span>04</span>
+            <strong>Weather Uncertainty Lab</strong>
+            <small>Python / ML / Plotly</small>
+          </button>
         </div>
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-date">Jan 2024 – May 2024</div>
-          <div class="tl-role">Data Science Intern</div>
-          <div class="tl-company">upGrad Campus · Remote</div>
-          <div class="tl-desc">Bayesian Deep Learning for probabilistic weather forecasting; 96.93% accuracy with Gradient Boosting.</div>
+
+        <article class="project-stage reveal-card" data-reveal aria-live="polite">
+          <div class="stage-meta" id="projectMeta">Enterprise ETL</div>
+          <h3 id="projectTitle">Banking ETL Command Grid</h3>
+          <p id="projectSummary">Designed and delivered regulated banking pipelines that move millions of transactions through reusable transformations, delta loads, and SCD handling with production-grade accuracy.</p>
+          <div class="stage-tags" id="projectTags">
+            <span>25+ pipelines</span>
+            <span>8M+ daily transactions</span>
+            <span>99.5% accuracy</span>
+          </div>
+          <ul id="projectBullets">
+            <li>Built mappings, sessions, workflows, and reusable transformations in Informatica PowerCenter and IICS.</li>
+            <li>Processed data across 12+ enterprise source systems with sub-30s SLA requirements.</li>
+            <li>Used validation and error-handling logic to keep financial data auditable and trustworthy.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="skills section-pad" id="skills" data-section>
+      <div class="section-heading" data-reveal>
+        <p class="eyebrow">Skill Matrix</p>
+        <h2>Tools arranged by the problems they solve.</h2>
+      </div>
+
+      <div class="skill-console reveal-card" data-reveal>
+        <div class="skill-tabs" role="tablist" aria-label="Skill categories">
+          <button class="active magnetic" type="button" data-filter="all">All</button>
+          <button class="magnetic" type="button" data-filter="etl">ETL</button>
+          <button class="magnetic" type="button" data-filter="governance">Governance</button>
+          <button class="magnetic" type="button" data-filter="database">Database</button>
+          <button class="magnetic" type="button" data-filter="analytics">Cloud & Analytics</button>
         </div>
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-date">2020 – 2024</div>
-          <div class="tl-role">B.Tech Computer Science</div>
-          <div class="tl-company">Lovely Professional University</div>
-          <div class="tl-desc">Foundation in algorithms, databases, and software engineering.</div>
+
+        <div class="skill-grid">
+          <span class="skill-chip" data-skill="etl">Informatica PowerCenter</span>
+          <span class="skill-chip" data-skill="etl">Informatica IICS</span>
+          <span class="skill-chip" data-skill="etl">SSIS</span>
+          <span class="skill-chip" data-skill="etl database">SQL Server</span>
+          <span class="skill-chip" data-skill="governance">Informatica EDC</span>
+          <span class="skill-chip" data-skill="governance">Informatica AXON</span>
+          <span class="skill-chip" data-skill="governance">Metadata Management</span>
+          <span class="skill-chip" data-skill="governance">Data Lineage</span>
+          <span class="skill-chip" data-skill="database">Oracle PL/SQL</span>
+          <span class="skill-chip" data-skill="database">Snowflake</span>
+          <span class="skill-chip" data-skill="database">Teradata</span>
+          <span class="skill-chip" data-skill="database">SQL & T-SQL</span>
+          <span class="skill-chip" data-skill="analytics">AWS S3</span>
+          <span class="skill-chip" data-skill="analytics">AWS EC2</span>
+          <span class="skill-chip" data-skill="analytics">Power BI</span>
+          <span class="skill-chip" data-skill="analytics">Plotly</span>
+          <span class="skill-chip" data-skill="analytics database">Python</span>
+          <span class="skill-chip" data-skill="etl">Unix/Linux Shell</span>
+          <span class="skill-chip" data-skill="governance">PDPL</span>
+          <span class="skill-chip" data-skill="governance">NDMO</span>
+          <span class="skill-chip" data-skill="governance">SAMA</span>
+          <span class="skill-chip" data-skill="governance">NCA</span>
+          <span class="skill-chip" data-skill="analytics">Agile/Scrum</span>
         </div>
       </div>
-    </div>
-  </div>
-</section>
+    </section>
 
-<!-- ── EXPERIENCE ── -->
-<section id="experience">
-  <span class="section-eye">// work experience</span>
-  <h2 class="section-title reveal">Where I've Worked</h2>
-  <p class="section-sub reveal">Delivering production-grade data systems for enterprise banking environments.</p>
+    <section class="credentials section-pad">
+      <div class="credential-grid">
+        <article class="credential-card reveal-card" data-reveal>
+          <span>Education</span>
+          <h2>Lovely Professional University</h2>
+          <p>Bachelor of Technology in Computer Science</p>
+          <small>2020 - 2024 / Jalandhar, Punjab</small>
+        </article>
+        <article class="credential-card reveal-card accent" data-reveal>
+          <span>Certification</span>
+          <h2>Microsoft Certified</h2>
+          <p>Power BI Data Analyst Associate</p>
+          <small>Analytics, modeling, reporting, and stakeholder-ready dashboards.</small>
+        </article>
+      </div>
+    </section>
 
-  <div class="exp-cards">
-
-    <div class="exp-card reveal">
-      <div class="exp-header">
+    <section class="contact section-pad" id="contact" data-section>
+      <div class="contact-shell reveal-card" data-reveal>
         <div>
-          <div class="exp-title">Data Engineer</div>
-          <div class="exp-company">C5I</div>
+          <p class="eyebrow">Contact</p>
+          <h2>Ready to move data with intent.</h2>
+          <p>For data engineering, ETL, migration, analytics, and governance work, reach Manidathu directly.</p>
         </div>
-        <div class="exp-period">Jul 2024 – Present</div>
-      </div>
-      <ul class="exp-bullets">
-        <li>Designed and delivered <strong>25+ end-to-end ETL pipelines</strong> using Informatica PowerCenter / IICS and SSIS — including reusable transformations, incremental/delta loads, and SCD Type 1 &amp; 2 — processing 8M+ daily banking transactions with 99.5% accuracy.</li>
-        <li>Migrated <strong>15 critical pipelines</strong> from on-premises Oracle to Snowflake; reduced query execution time by 65% via advanced partitioning and materialised views.</li>
-        <li>Optimised Oracle PL/SQL stored procedures, cutting batch processing time <strong>from 2.5 hrs to 35 mins (77% improvement)</strong> through index tuning and execution plan analysis.</li>
-        <li>Implemented data validation, reconciliation logic, and automated alerts for <strong>15+ quality thresholds</strong> in SSIS, reducing manual audit effort by 40%.</li>
-        <li>Managed end-to-end Data Retention for <strong>180+ assets</strong> using Informatica EDC &amp; AXON; designed 4-level sensitivity classification aligned with PDPL, NDMO, SAMA, NCA — achieving 100% audit readiness.</li>
-        <li>Built <strong>35+ metadata mappings</strong> in Informatica EDC establishing complete data lineage from source to Snowflake, cutting audit preparation time by 35%.</li>
-        <li>Developed Power BI dashboards monitoring <strong>20+ KPIs</strong> for 50+ stakeholders; conducted governance training for 20+ teams.</li>
-      </ul>
-      <div class="exp-tags">
-        <span class="exp-tag">Informatica PowerCenter</span>
-        <span class="exp-tag">IICS</span>
-        <span class="exp-tag">SSIS</span>
-        <span class="exp-tag">Snowflake</span>
-        <span class="exp-tag">Oracle PL/SQL</span>
-        <span class="exp-tag">Informatica EDC</span>
-        <span class="exp-tag">AXON</span>
-        <span class="exp-tag">Power BI</span>
-      </div>
-    </div>
-
-    <div class="exp-card reveal" style="transition-delay:0.15s">
-      <div class="exp-header">
-        <div>
-          <div class="exp-title">Data Science Intern</div>
-          <div class="exp-company">upGrad Campus</div>
-        </div>
-        <div class="exp-period">Jan 2024 – May 2024</div>
-      </div>
-      <ul class="exp-bullets">
-        <li>Trained and compared Decision Tree, <strong>Gradient Boosting (96.93% accuracy)</strong>, and Bayesian Neural Network models on historical weather data using Python, Pandas, NumPy.</li>
-        <li>Implemented a Bayesian Neural Network to quantify forecast uncertainty probabilistically, enabling <strong>risk-aware predictions</strong> beyond deterministic baselines.</li>
-        <li>Built interactive visualisation dashboards using <strong>Plotly</strong> for predicted weather patterns and uncertainty levels, improving interpretability for stakeholders.</li>
-      </ul>
-      <div class="exp-tags">
-        <span class="exp-tag">Python</span>
-        <span class="exp-tag">Pandas</span>
-        <span class="exp-tag">NumPy</span>
-        <span class="exp-tag">Gradient Boosting</span>
-        <span class="exp-tag">Bayesian Neural Network</span>
-        <span class="exp-tag">Plotly</span>
-      </div>
-    </div>
-
-  </div>
-</section>
-
-<!-- ── SKILLS ── -->
-<section id="skills">
-  <span class="section-eye">// technical skills</span>
-  <h2 class="section-title reveal">Tech Stack</h2>
-  <p class="section-sub reveal">The tools and technologies I work with daily.</p>
-
-  <div class="skills-grid">
-
-    <div class="skill-group reveal">
-      <div class="skill-group-title"><span class="skill-group-icon">⚙️</span> ETL &amp; Integration</div>
-      <div class="skill-items">
-        <span class="skill-item">Informatica PowerCenter</span>
-        <span class="skill-item">Informatica IICS</span>
-        <span class="skill-item">SSIS</span>
-        <span class="skill-item">SQL Server</span>
-        <span class="skill-item">SCD Type 1 &amp; 2</span>
-        <span class="skill-item">Delta Loads</span>
-      </div>
-    </div>
-
-    <div class="skill-group reveal" style="transition-delay:0.1s">
-      <div class="skill-group-title"><span class="skill-group-icon">🗄️</span> Databases</div>
-      <div class="skill-items">
-        <span class="skill-item">Oracle PL/SQL</span>
-        <span class="skill-item">Snowflake</span>
-        <span class="skill-item">SQL Server</span>
-        <span class="skill-item">Teradata</span>
-        <span class="skill-item">T-SQL</span>
-      </div>
-    </div>
-
-    <div class="skill-group reveal" style="transition-delay:0.2s">
-      <div class="skill-group-title"><span class="skill-group-icon">🏛️</span> Data Governance</div>
-      <div class="skill-items">
-        <span class="skill-item">Informatica EDC</span>
-        <span class="skill-item">Informatica AXON</span>
-        <span class="skill-item">Metadata Management</span>
-        <span class="skill-item">Data Lineage</span>
-        <span class="skill-item">Data Cataloguing</span>
-      </div>
-    </div>
-
-    <div class="skill-group reveal" style="transition-delay:0.3s">
-      <div class="skill-group-title"><span class="skill-group-icon">☁️</span> Cloud &amp; Analytics</div>
-      <div class="skill-items">
-        <span class="skill-item">AWS S3</span>
-        <span class="skill-item">AWS EC2</span>
-        <span class="skill-item">Power BI</span>
-        <span class="skill-item">Plotly</span>
-        <span class="skill-item">Agile / Scrum</span>
-      </div>
-    </div>
-
-    <div class="skill-group reveal" style="transition-delay:0.4s">
-      <div class="skill-group-title"><span class="skill-group-icon">💻</span> Languages</div>
-      <div class="skill-items">
-        <span class="skill-item">SQL</span>
-        <span class="skill-item">Python</span>
-        <span class="skill-item">Unix/Linux Shell</span>
-        <span class="skill-item">T-SQL</span>
-      </div>
-    </div>
-
-    <div class="skill-group reveal" style="transition-delay:0.5s">
-      <div class="skill-group-title"><span class="skill-group-icon">📋</span> Compliance</div>
-      <div class="skill-items">
-        <span class="skill-item">PDPL</span>
-        <span class="skill-item">NDMO</span>
-        <span class="skill-item">SAMA</span>
-        <span class="skill-item">NCA</span>
-        <span class="skill-item">Financial Compliance</span>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Proficiency Bars -->
-  <div class="reveal" style="margin-top:48px; max-width:640px; transition-delay:0.2s">
-    <h3 style="font-family:'Space Grotesk',sans-serif; font-size:1rem; color:var(--white); margin-bottom:20px;">Core Proficiency</h3>
-    <div class="prof-bars">
-      <div class="prof-bar-row"><div class="prof-bar-label"><span>Informatica PowerCenter / IICS</span><span>95%</span></div><div class="prof-bar-track"><div class="prof-bar-fill" data-width="95"></div></div></div>
-      <div class="prof-bar-row"><div class="prof-bar-label"><span>Oracle PL/SQL</span><span>90%</span></div><div class="prof-bar-track"><div class="prof-bar-fill" data-width="90"></div></div></div>
-      <div class="prof-bar-row"><div class="prof-bar-label"><span>Snowflake</span><span>85%</span></div><div class="prof-bar-track"><div class="prof-bar-fill" data-width="85"></div></div></div>
-      <div class="prof-bar-row"><div class="prof-bar-label"><span>Data Governance (EDC/AXON)</span><span>88%</span></div><div class="prof-bar-track"><div class="prof-bar-fill" data-width="88"></div></div></div>
-      <div class="prof-bar-row"><div class="prof-bar-label"><span>Power BI</span><span>80%</span></div><div class="prof-bar-track"><div class="prof-bar-fill" data-width="80"></div></div></div>
-      <div class="prof-bar-row"><div class="prof-bar-label"><span>Python</span><span>75%</span></div><div class="prof-bar-track"><div class="prof-bar-fill" data-width="75"></div></div></div>
-    </div>
-  </div>
-</section>
-
-<!-- ── METRICS ── -->
-<section id="metrics">
-  <span class="section-eye"># key achievements</span>
-  <h2 class="section-title reveal">Impact by the Numbers</h2>
-  <p class="section-sub reveal" style="margin:0 auto 0">Measurable outcomes from 2.5 years of enterprise data engineering.</p>
-
-  <div class="metrics-grid">
-    <div class="metric-card reveal"><div class="metric-num" data-count="25">0</div><div class="metric-label">ETL Pipelines Delivered</div></div>
-    <div class="metric-card reveal metric-gold" style="transition-delay:.1s"><div class="metric-num">8M+</div><div class="metric-label">Daily Banking Transactions Processed</div></div>
-    <div class="metric-card reveal" style="transition-delay:.2s"><div class="metric-num" data-percent="99.5">0</div><div class="metric-label">Data Accuracy Rate</div></div>
-    <div class="metric-card reveal metric-gold" style="transition-delay:.3s"><div class="metric-num" data-count="65">0</div><div class="metric-label">% Query Speed Improvement (Snowflake)</div></div>
-    <div class="metric-card reveal" style="transition-delay:.4s"><div class="metric-num" data-count="77">0</div><div class="metric-label">% Batch Processing Time Reduction</div></div>
-    <div class="metric-card reveal metric-gold" style="transition-delay:.5s"><div class="metric-num" data-count="180">0</div><div class="metric-label">Data Assets Under Governance</div></div>
-    <div class="metric-card reveal" style="transition-delay:.6s"><div class="metric-num" data-count="35">0</div><div class="metric-label">Metadata Mappings Built</div></div>
-    <div class="metric-card reveal metric-gold" style="transition-delay:.7s"><div class="metric-num" data-count="15">0</div><div class="metric-label">Pipelines Migrated to Cloud</div></div>
-  </div>
-</section>
-
-<!-- ── EDUCATION ── -->
-<section id="education">
-  <span class="section-eye">// education & certifications</span>
-  <h2 class="section-title reveal">Credentials</h2>
-  <div class="edu-certs-grid">
-    <div class="edu-card reveal">
-      <div class="edu-card-title">Bachelor of Technology — Computer Science</div>
-      <div class="edu-card-school">Lovely Professional University</div>
-      <div class="edu-card-period">2020 – 2024 · Jalandhar, Punjab</div>
-    </div>
-    <div class="cert-card reveal" style="transition-delay:0.15s">
-      <div style="font-family:'Space Grotesk',sans-serif; font-size:0.85rem; color:var(--slate); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:16px;">Certifications</div>
-      <div class="cert-badge">
-        <div class="cert-icon">📊</div>
-        <div>
-          <div class="cert-name">Microsoft Certified: Power BI Data Analyst Associate</div>
-          <div class="cert-issuer">Microsoft · Active</div>
+        <div class="contact-actions">
+          <a class="primary-action magnetic" href="mailto:manidathua@gmail.com">Email Manidathu</a>
+          <a class="secondary-action magnetic" href="https://linkedin.com/in/Manidathu">Open LinkedIn</a>
+          <a class="secondary-action magnetic" href="tel:+919618594639">Call</a>
         </div>
       </div>
-    </div>
-  </div>
-</section>
+    </section>
+  </main>
 
-<!-- ── CONTACT ── -->
-<section id="contact">
-  <div class="reveal">
-    <span class="section-eye">// let's connect</span>
-    <h2 class="contact-cta">Open to new opportunities</h2>
-    <p class="contact-sub">Whether it's a data engineering role, a collaboration, or just a conversation — I'd love to hear from you.</p>
-    <div class="contact-links">
-      <a href="mailto:manidathua@gmail.com" class="contact-link">✉ manidathua@gmail.com</a>
-      <a href="tel:+919618594639" class="contact-link">📱 +91 9618594639</a>
-      <a href="https://linkedin.com/in/Manidathu" target="_blank" class="contact-link">🔗 linkedin.com/in/Manidathu</a>
-    </div>
-    <div class="footer-note">
-      <p>© 2025 Manidathu Andriyala · Data Engineer · Hyderabad, India</p>
-    </div>
-  </div>
-</section>
+  <footer class="site-footer">
+    <span>Manidathu Andriyala</span>
+    <a href="#home">Back to top</a>
+  </footer>
 
-<script>
-/* ── Custom Cursor ── */
-const cursorDot  = document.getElementById('cursor-dot');
-const cursorRing = document.getElementById('cursor-ring');
-let mx = 0, my = 0, rx = 0, ry = 0;
-
-document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
-
-function animCursor() {
-  cursorDot.style.left = mx + 'px'; cursorDot.style.top = my + 'px';
-  rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
-  cursorRing.style.left = rx + 'px'; cursorRing.style.top = ry + 'px';
-  requestAnimationFrame(animCursor);
-}
-animCursor();
-
-document.querySelectorAll('a, button, .stat-card, .exp-card, .skill-group, .metric-card').forEach(el => {
-  el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
-  el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
-});
-
-/* ── Navbar scroll ── */
-const navbar = document.getElementById('navbar');
-window.addEventListener('scroll', () => {
-  navbar.classList.toggle('scrolled', window.scrollY > 40);
-});
-
-/* ── Typewriter ── */
-const roles = [
-  'Data Engineer',
-  'ETL Pipeline Architect',
-  'Snowflake Migration Expert',
-  'Data Governance Specialist',
-  'Power BI Developer'
-];
-let rIdx = 0, cIdx = 0, deleting = false;
-const tw = document.getElementById('typewriter');
-
-function typeLoop() {
-  const current = roles[rIdx];
-  if (!deleting) {
-    cIdx++;
-    tw.innerHTML = current.slice(0, cIdx) + '<span class="cursor-blink">|</span>';
-    if (cIdx === current.length) {
-      deleting = true;
-      setTimeout(typeLoop, 1800);
-      return;
-    }
-    setTimeout(typeLoop, 70);
-  } else {
-    cIdx--;
-    tw.innerHTML = current.slice(0, cIdx) + '<span class="cursor-blink">|</span>';
-    if (cIdx === 0) {
-      deleting = false;
-      rIdx = (rIdx + 1) % roles.length;
-      setTimeout(typeLoop, 300);
-      return;
-    }
-    setTimeout(typeLoop, 35);
-  }
-}
-setTimeout(typeLoop, 1400);
-
-/* ── Scroll reveal ── */
-const reveals = document.querySelectorAll('.reveal');
-const revealObs = new IntersectionObserver(entries => {
-  entries.forEach((e, i) => {
-    if (e.isIntersecting) {
-      e.target.classList.add('visible');
-    }
-  });
-}, { threshold: 0.12 });
-reveals.forEach(el => revealObs.observe(el));
-
-/* ── Proficiency bars ── */
-const barObs = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      e.target.querySelectorAll('.prof-bar-fill').forEach(bar => {
-        bar.style.width = bar.dataset.width + '%';
-      });
-    }
-  });
-}, { threshold: 0.3 });
-document.querySelectorAll('.prof-bars').forEach(el => barObs.observe(el));
-
-/* ── Counter animation ── */
-function animCount(el, target, suffix = '') {
-  let current = 0;
-  const step = target / 50;
-  const t = setInterval(() => {
-    current = Math.min(current + step, target);
-    el.textContent = (target % 1 !== 0 ? current.toFixed(1) : Math.round(current)) + suffix;
-    if (current >= target) clearInterval(t);
-  }, 30);
-}
-
-const counterObs = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      const el = e.target;
-      if (el.dataset.count)   animCount(el, +el.dataset.count);
-      if (el.dataset.percent) animCount(el, +el.dataset.percent, '%');
-      counterObs.unobserve(el);
-    }
-  });
-}, { threshold: 0.5 });
-document.querySelectorAll('[data-count], [data-percent]').forEach(el => counterObs.observe(el));
-
-/* ── Pipeline Canvas Background ── */
-const canvas = document.getElementById('pipeline-canvas');
-const ctx = canvas.getContext('2d');
-
-function resize() {
-  canvas.width  = canvas.offsetWidth;
-  canvas.height = canvas.offsetHeight;
-}
-resize();
-window.addEventListener('resize', resize);
-
-const NODES = [];
-const NODE_COUNT = 14;
-
-for (let i = 0; i < NODE_COUNT; i++) {
-  NODES.push({
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height,
-    vx: (Math.random() - 0.5) * 0.4,
-    vy: (Math.random() - 0.5) * 0.4,
-    r: 3 + Math.random() * 3
-  });
-}
-
-let packets = [];
-function spawnPacket() {
-  const a = Math.floor(Math.random() * NODE_COUNT);
-  let b;
-  do { b = Math.floor(Math.random() * NODE_COUNT); } while (b === a);
-  packets.push({ from: a, to: b, t: 0, speed: 0.008 + Math.random() * 0.008 });
-}
-setInterval(spawnPacket, 600);
-
-function drawPipeline() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Update node positions
-  NODES.forEach(n => {
-    n.x += n.vx; n.y += n.vy;
-    if (n.x < 0 || n.x > canvas.width)  n.vx *= -1;
-    if (n.y < 0 || n.y > canvas.height) n.vy *= -1;
-  });
-
-  // Draw edges
-  for (let i = 0; i < NODE_COUNT; i++) {
-    for (let j = i + 1; j < NODE_COUNT; j++) {
-      const dx = NODES[i].x - NODES[j].x;
-      const dy = NODES[i].y - NODES[j].y;
-      const dist = Math.sqrt(dx*dx + dy*dy);
-      if (dist < 220) {
-        ctx.beginPath();
-        ctx.moveTo(NODES[i].x, NODES[i].y);
-        ctx.lineTo(NODES[j].x, NODES[j].y);
-        ctx.strokeStyle = `rgba(0,212,255,${0.07 * (1 - dist/220)})`;
-        ctx.lineWidth = 1;
-        ctx.stroke();
-      }
-    }
-  }
-
-  // Draw packets
-  packets = packets.filter(p => p.t <= 1);
-  packets.forEach(p => {
-    p.t += p.speed;
-    const from = NODES[p.from], to = NODES[p.to];
-    const px = from.x + (to.x - from.x) * p.t;
-    const py = from.y + (to.y - from.y) * p.t;
-    ctx.beginPath();
-    ctx.arc(px, py, 3, 0, Math.PI * 2);
-    ctx.fillStyle = '#FFB800';
-    ctx.shadowBlur = 8; ctx.shadowColor = '#FFB800';
-    ctx.fill();
-    ctx.shadowBlur = 0;
-  });
-
-  // Draw nodes
-  NODES.forEach(n => {
-    ctx.beginPath();
-    ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(0,212,255,0.5)';
-    ctx.shadowBlur = 10; ctx.shadowColor = 'rgba(0,212,255,0.8)';
-    ctx.fill();
-    ctx.shadowBlur = 0;
-  });
-
-  requestAnimationFrame(drawPipeline);
-}
-drawPipeline();
-</script>
+  <script src="script.js"></script>
 </body>
 </html>
